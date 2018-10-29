@@ -1,0 +1,7 @@
+C:\Users\Nelto\source\repos\Random_Char-Gener\Random_Char-Gener\bin\Debug\Random_Char-Gener.exe.config
+C:\Users\Nelto\source\repos\Random_Char-Gener\Random_Char-Gener\bin\Debug\Random_Char-Gener.exe
+C:\Users\Nelto\source\repos\Random_Char-Gener\Random_Char-Gener\bin\Debug\Random_Char-Gener.pdb
+C:\Users\Nelto\source\repos\Random_Char-Gener\Random_Char-Gener\obj\Debug\Random_Char-Gener.csprojResolveAssemblyReference.cache
+C:\Users\Nelto\source\repos\Random_Char-Gener\Random_Char-Gener\obj\Debug\Random_Char-Gener.csproj.CoreCompileInputs.cache
+C:\Users\Nelto\source\repos\Random_Char-Gener\Random_Char-Gener\obj\Debug\Random_Char-Gener.exe
+C:\Users\Nelto\source\repos\Random_Char-Gener\Random_Char-Gener\obj\Debug\Random_Char-Gener.pdb
