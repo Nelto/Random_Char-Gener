@@ -13,9 +13,10 @@ namespace LB_1
         private StringBuilder res = new StringBuilder();
         private int numOfChance = 0;
         private List<int> pointsInLine = new List<int>();
-        private double[] chances;
+        private double[,] chances;
         private char[] chars;
         private int numOfChars;
+        private bool islinear = true;
 
         public Generation(String fileInput, char[] chars, int numOfChars)
         {
@@ -32,9 +33,12 @@ namespace LB_1
             build.Clear();
             PointCounting();
             if (!isLinear() && !isSquare()) throw new Exception("Не соблюдено условие(Матрица не является квадратной или линейной)");
-            if (chars.Length != numOfChance) throw new Exception("Кол-во вероятностей и генерируемых символов не равны ");
+            if (islinear && chars.Length != numOfChance) throw new Exception("Кол-во вероятностей и генерируемых символов не равны 1");
+            if(!islinear && pointsInLine[0]!=chars.Length) throw new Exception("Кол-во вероятностей и генерируемых символов не равны 2");
             Pars();
-            if (!SumEquelOne()) throw new Exception("Сумма вероятностей не равна 1");
+            if (!SumEquelOneLinear() && islinear ) throw new Exception("Сумма вероятностей не равна 1");
+            int row = SumEquelOneSquare();
+                if (row != -1) throw new Exception("Сумма вероятностей не равна 1 в "+ row +" строке");
         }
 
         private void ObtChance(StringBuilder build)
@@ -43,7 +47,7 @@ namespace LB_1
 
             for (; i < build.Length - 1; i++)
             {
-                if (build[i] == '\n') res.Append('\n');
+                if (build[i] == '\n') res.Append(" \n");
                 if (build[i] == '0' || build[i] == '1')
                 {
                     if ((build[i - 1] < '.' || build[i - 1] > '9')
@@ -61,6 +65,7 @@ namespace LB_1
                 }
             }
             res.Append(" ");
+            DeleteNullRow();
         }
 
         private void PointCounting()
@@ -69,20 +74,29 @@ namespace LB_1
             for (int i = 0; i < res.Length; i++)
             {
                 if (res[i] == '.') count++;
-                if (res[i] == '\n' && count > 0)
+                if (res[i] == '\n')
                 {
                     pointsInLine.Add(count);
                     numOfChance += count;
                     count = 0;
                 }
             }
+            if (count > 0) pointsInLine.Add(count);
             numOfChance += count;
         }
 
         private bool isLinear()
         {
-            if (pointsInLine.Count == 1) return true;
-            for (int i = 0; i < pointsInLine.Count; i++) if (pointsInLine[i] != 1) return false;
+            if (pointsInLine.Count == 1)
+            {
+                return true;
+            }
+            for (int i = 0; i < pointsInLine.Count; i++)
+                if (pointsInLine[i] != 1)
+                {
+                    islinear = false;
+                    return false;
+                }
             return true;
         }
 
@@ -97,45 +111,75 @@ namespace LB_1
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             int k = 0;
+            int j = 0;
             string chance = "";
-            chances = new double[numOfChance];
-            for (int i = 1; i < res.Length; i++)
+            chances = new double[pointsInLine[0], pointsInLine[0]];
+            for (int i = 0; i < res.Length; i++)
             {
+               
                 chance += res[i];
-                if (res[i] == ' ')
+                if (res[i] == ' ' && chance.Length > 1)
                 {
-                    chances[k] = Convert.ToDouble(chance);
+                    chances[k, j] = Convert.ToDouble(chance);
                     chance = "";
+                    j++;
+                }
+                if (res[i] == '\n')
+                {
+                    j = 0;
                     k++;
+                    chance = "";
                 }
             }
         }
 
-        private bool SumEquelOne()
+         private void DeleteNullRow()
+        {
+            for (int i = 0; i < res.Length - 2; i++)
+            {
+                if (res[i] == '\n' && res[i + 2] == '\n') res.Remove(i, 1);
+            }
+        }
+
+        private bool SumEquelOneLinear()
         {
             double count = 0.0;
-            for (int i = 0; i < chances.Length; i++) count += chances[i];
+            foreach (double c in chances) count += c;
             if (count == 1.0) return true;
             else return false;
         }
 
-        private int Gener(double ran)
+        private int SumEquelOneSquare()
         {
-            double right = 0;
-            double left = 0;
-            for (int i = 0; i < numOfChance; i++)
+            double count = 0.0;
+            for (int i = 0; i < pointsInLine.Count; i++)
             {
-                right += chances[i];
-                if (ran > left && ran <= right) return i;
-                left = right;
+                count = 0.0;
+                for (int j = 0; j < pointsInLine[i]; j++)
+                {
+                    count += chances[i, j];
+                }
+                if (count != 1.0) return i;
             }
             return -1;
         }
 
+        private char GenerLinear(double ran)
+        {
+            double right = 0;
+            int i = -1;
+            foreach (double c in chances)
+            {
+                i++;
+                right += c;
+                if (ran <= right) return chars[i];
+            }
+            return ' ';
+        }
+
         public void PrintChances()
         {
-            for (int i = 0; i < chances.Length; i++)
-                Console.Write(chances[i] + " ");
+                Console.Write(res);
         }
 
         public void WriteChar(string fileOutput)
@@ -143,12 +187,10 @@ namespace LB_1
             using (StreamWriter sw = new StreamWriter(fileOutput))
             {
                 Random rand = new Random();
-                int numChar = -1;
+                if(islinear)
                 for (int i = 0; i < numOfChars; i++)
                 {
-                    numChar = Gener(rand.NextDouble());
-                    if (numChar != -1)
-                        sw.Write(chars[numChar]);
+                        sw.Write(GenerLinear(rand.NextDouble()));
                 }
             }
         }
